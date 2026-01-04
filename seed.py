@@ -24,7 +24,7 @@ def seed_database():
                 'rpm': 5,
                 'tpm': 250000,
                 'rpd': 20,
-                'api_key': 'AIzaSyCJbQ2r30CVKg0kBGCd8-8gg8IQKfYwmKo'
+                'api_key': ''
             },
             {
                 'name': 'gemma-3-27b',
@@ -33,7 +33,7 @@ def seed_database():
                 'rpm': 30,
                 'tpm': 15000,
                 'rpd': 14400,
-                'api_key': 'AIzaSyCJbQ2r30CVKg0kBGCd8-8gg8IQKfYwmKo'
+                'api_key': ''
             },
             {
                 'name': 'ngrok',
@@ -42,7 +42,7 @@ def seed_database():
                 'rpm': 120,
                 'tpm': 0,
                 'rpd': 650,
-                'api_key': 'AIzaSyCJbQ2r30CVKg0kBGCd8-8gg8IQKfYwmKo'
+                'api_key': ''
             },
         ]
         
