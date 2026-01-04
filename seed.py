@@ -4,6 +4,9 @@ from app.models.base import db
 from app.models.llm import LLM
 from app.models.usage import Usage
 from app.utils.logger import get_logger
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = get_logger(__name__)
 
@@ -24,7 +27,7 @@ def seed_database():
                 'rpm': 5,
                 'tpm': 250000,
                 'rpd': 20,
-                'api_key': ''
+                'api_key': os.getenv('GEMINI_API_KEY')
             },
             {
                 'name': 'gemma-3-27b',
@@ -33,7 +36,7 @@ def seed_database():
                 'rpm': 30,
                 'tpm': 15000,
                 'rpd': 14400,
-                'api_key': ''
+                'api_key': os.getenv('GEMINI_API_KEY')
             },
             {
                 'name': 'ngrok',
@@ -42,7 +45,7 @@ def seed_database():
                 'rpm': 120,
                 'tpm': 0,
                 'rpd': 650,
-                'api_key': ''
+                'api_key': os.getenv('NGROK_API_KEY')
             },
         ]
         
