@@ -1,9 +1,10 @@
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify
 from app.services.gemini_service import test_gemini
-from app.services.chat_service import chat as chat_service
-from app.services.chat_service import get_conversation_history_by_id
+from app.services.chat_orchestrator import ChatOrchestrator
 
 llm_bp = Blueprint('llm', __name__)
+
+orchestrator = ChatOrchestrator()
 
 @llm_bp.route('/chat-test', methods=['GET'])
 def test():
@@ -26,7 +27,7 @@ def chat():
         }), 400
     
     try:
-        response_data = chat_service(message, conversation_id)
+        response_data = orchestrator.chat(message, conversation_id)
         return jsonify({
             'status': 'success',
             'data': response_data
@@ -48,7 +49,7 @@ def get_conversation_history():
     try:
         return jsonify({
             'status': 'success',
-            'data': get_conversation_history_by_id(conversation_id)
+            'data': orchestrator.get_history(conversation_id)
         }), 200
     except Exception as e:
         return jsonify({

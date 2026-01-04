@@ -10,6 +10,16 @@ from typing import Dict, Any, Optional
 
 logger = get_logger(__name__)
 
+def update_usage(llm_id: int):
+    with current_app.app_context():
+        usage = Usage.query.filter_by(llm_id=llm_id).first()
+        if usage:
+            usage.rpd_count += 1
+            db.session.commit()
+        else:
+            usage = Usage(llm_id=llm_id, rpd_count=1)
+            db.session.add(usage)
+
 def chat_selector():
     with current_app.app_context():
         llms_with_usage = db.session.query(LLM, Usage).join(
@@ -75,6 +85,7 @@ def chat(message: str, conversation_id: Optional[str] = None) -> Dict[str, Any]:
         })
     
     save_message(conversation)
+    update_usage(selected_llm.id)
     
     response_data['conversation_id'] = conversation_id
     
