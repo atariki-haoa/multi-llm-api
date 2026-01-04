@@ -1,18 +1,25 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 import jwt
 from flask import current_app
 from app.models.user import User
-from app import db
+from app.models.base import db
+from app.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class AuthService:
     @staticmethod
     def create_user(username: str, email: str, password: str) -> User:
+        logger.info(f'Intentando crear usuario: {username}')
+        
         if User.query.filter_by(username=username).first():
+            logger.warning(f'Intento de registro con username duplicado: {username}')
             raise ValueError('El nombre de usuario ya existe')
         
         if User.query.filter_by(email=email).first():
+            logger.warning(f'Intento de registro con email duplicado: {email}')
             raise ValueError('El email ya está registrado')
         
         user = User(username=username, email=email)
@@ -21,20 +28,28 @@ class AuthService:
         db.session.add(user)
         db.session.commit()
         
+        logger.info(f'Usuario creado exitosamente: {username} (ID: {user.id})')
+        
         return user
     
     @staticmethod
     def authenticate_user(username: str, password: str) -> Optional[User]:
+        logger.debug(f'Intentando autenticar usuario: {username}')
+        
         user = User.query.filter_by(username=username).first()
         
         if not user or not user.is_active:
+            logger.warning(f'Intento de autenticación fallido: usuario no encontrado o inactivo - {username}')
             return None
         
         if not user.check_password(password):
+            logger.warning(f'Intento de autenticación fallido: contraseña incorrecta - {username}')
             return None
         
-        user.last_login = datetime.timezone.utc()
+        user.last_login = datetime.now(timezone.utc)
         db.session.commit()
+        
+        logger.info(f'Usuario autenticado exitosamente: {username} (ID: {user.id})')
         
         return user
     
@@ -51,11 +66,12 @@ class AuthService:
     
     @staticmethod
     def _generate_access_token(user: User) -> str:
+        now = datetime.now(timezone.utc)
         payload = {
             'user_id': user.id,
             'username': user.username,
-            'exp': datetime.timezone.utc() + current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
-            'iat': datetime.timezone.utc(),
+            'exp': now + current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
+            'iat': now,
             'type': 'access'
         }
         
@@ -67,10 +83,11 @@ class AuthService:
     
     @staticmethod
     def _generate_refresh_token(user: User) -> str:
+        now = datetime.now(timezone.utc)
         payload = {
             'user_id': user.id,
-            'exp': datetime.timezone.utc() + current_app.config['JWT_REFRESH_TOKEN_EXPIRES'],
-            'iat': datetime.timezone.utc(),
+            'exp': now + current_app.config['JWT_REFRESH_TOKEN_EXPIRES'],
+            'iat': now,
             'type': 'refresh'
         }
         
@@ -90,12 +107,16 @@ class AuthService:
             )
             
             if payload.get('type') != token_type:
+                logger.warning(f'Token con tipo incorrecto. Esperado: {token_type}')
                 return None
             
+            logger.debug(f'Token verificado exitosamente. Tipo: {token_type}, User ID: {payload.get("user_id")}')
             return payload
         except jwt.ExpiredSignatureError:
+            logger.warning('Intento de uso de token expirado')
             return None
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
+            logger.error(f'Token inválido: {str(e)}')
             return None
     
     @staticmethod

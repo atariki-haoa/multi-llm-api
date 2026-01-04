@@ -6,3 +6,6 @@ Werkzeug==3.0.1
 requests==2.31.0
 urllib3==2.1.0
 python-dotenv==1.0.0
+google-genai==1.56.0
+redis==5.0.1
+ngrok==1.7.0
