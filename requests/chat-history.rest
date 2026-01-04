@@ -1,0 +1,2 @@
+GET http://localhost:9000/api/llm/get-conversation-history?conversation_id=61a8c1ad-e352-40cc-b6df-98a296431006
+Content-Type: application/json
