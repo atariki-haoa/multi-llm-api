@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.services.gemini_service import test_gemini
 from app.services.chat_orchestrator import ChatOrchestrator
+from app.services.llm.gemini_llm_service import GeminiLLMService
 
 llm_bp = Blueprint('llm', __name__)
 
@@ -8,11 +8,20 @@ orchestrator = ChatOrchestrator()
 
 @llm_bp.route('/chat-test', methods=['GET'])
 def test():
-    response = test_gemini()
-    return jsonify({
-        'status': 'success',
-        'message': response
-    }), 200
+    try:
+        gemini_service = GeminiLLMService()
+        response = gemini_service.chat([
+            {'role': 'user', 'content': 'Hola, responde solo con "Test exitoso"'}
+        ])
+        return jsonify({
+            'status': 'success',
+            'message': response
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
 
 @llm_bp.route('/chat', methods=['POST'])
 def chat():
